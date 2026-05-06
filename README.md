@@ -17,4 +17,4 @@ Restart your server.
 That’s it — the petty theft system should be fully functional.
 
 # Credits
-Im not taking credit for this someone had released this a while back for Mythic FW I still had it and converted it to Pulsar FW.. All credits to who it was that originally created it! 
+Glow - for originally creating this for Mythic FW
