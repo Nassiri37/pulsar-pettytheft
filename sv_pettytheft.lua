@@ -59,24 +59,38 @@ local function givePlayerItem(src, itemName, amount)
     return false
 end
 
-local function PDAlert(src, content, content2, name)
+local function PDAlert(src, coords, title, details, crimeType)
     exports["pulsar-robbery"]:TriggerPDAlert(
         src,
-        GetEntityCoords(GetPlayerPed(src)),
-        "10-24",
-        content,
+         coords,
+        "10-90",
+        title,
         {
             icon = 500,
-            size = 1,
-            color = 1,
+            size = 0.9,
+            color = 31,
             duration = (60 * 5),
         },
         {
             icon = "shield-quartered",
-            details = content2,
+            details = details,
         },
-        name
+        crimeType
     )
+end
+
+local function getAlertCoords(src, data)
+    if data and data.coords then
+        if type(data.coords) == "vector3" then
+            return data.coords
+        end
+
+        if type(data.coords) == "table" and data.coords.x and data.coords.y and data.coords.z then
+            return vector3(data.coords.x + 0.0, data.coords.y + 0.0, data.coords.z + 0.0)
+        end
+    end
+
+    return GetEntityCoords(GetPlayerPed(src))
 end
 
 AddEventHandler("Robbery:Server:Setup", function()
@@ -95,7 +109,7 @@ function setupCallbacks()
         end
 
         if math.random(100) <= ALERT_METER then
-            PDAlert(src, "Parking Meter Tampering", "Petty Crime", "parking")
+          PDAlert(src, getAlertCoords(src, data), "Parking Meter Tampering", "Petty Crime", "parking")
         end
 
         local qty = math.random(8, 18)
@@ -117,7 +131,7 @@ function setupCallbacks()
         end
 
         if math.random(100) <= ALERT_MAILBOX then
-            PDAlert(src, "Mailbox Robbery", "Petty Crime", "mailbox")
+             PDAlert(src, getAlertCoords(src, data), "Mailbox Robbery", "Petty Crime", "mailbox")
         end
 
         local loot = getLootFromTable(mailboxLoot)
@@ -145,7 +159,14 @@ function setupCallbacks()
         end
 
         if math.random(100) <= ALERT_PORCH then
-            PDAlert(src, "Porch Pirate", "Petty Crime", "porch")
+            local coords = getAlertCoords(src, data)
+            local spawns = GlobalState["porchPirateSpawns"]
+            if data and data.spawnIndex and spawns and spawns[data.spawnIndex] then
+                local spawn = spawns[data.spawnIndex]
+                coords = vector3(spawn.x, spawn.y, spawn.z)
+            end
+
+            PDAlert(src, coords, "Porch Pirate", "Petty Crime", "porch")
         end
 
         local loot = getLootFromTable(porchLoot)
@@ -164,12 +185,12 @@ function setupCallbacks()
     end)
 
     exports["pulsar-core"]:RegisterServerCallback("Robbery:ParkingMeter:Fail", function(source, data, cb)
-        PDAlert(source, "Parking Meter Tampering", "Petty Crime", "parking")
+       PDAlert(source, getAlertCoords(source, data), "Parking Meter Tampering", "Petty Crime", "parking")
         cb(false)
     end)
 
     exports["pulsar-core"]:RegisterServerCallback("Robbery:Mailbox:Fail", function(source, data, cb)
-        PDAlert(source, "Mailbox Robbery", "Petty Crime", "mailbox")
+        PDAlert(source, getAlertCoords(source, data), "Mailbox Robbery", "Petty Crime", "mailbox")
         cb(false)
     end)
 end
