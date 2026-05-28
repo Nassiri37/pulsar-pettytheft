@@ -34,6 +34,10 @@ local function lootReceivedSuffix(label, amount)
     return (" Received %dx %s."):format(amount, label)
 end
 
+local function getRobberyCoords()
+    return GetEntityCoords(PlayerPedId())
+end
+
 -- Events
 AddEventHandler('Characters:Client:Spawn', function()
     resetMisc()
@@ -62,7 +66,7 @@ AddEventHandler("Robbery:Client:Mailbox:Rob", function(ctx)
                 exports["pulsar-hud"]:ActionShow("mailbox_unstuck", "{keybind}primary_action{/keybind}Unstuck Hand")
                 isMailboxStuck = true
             else
-                exports["pulsar-core"]:ServerCallback("Robbery:Mailbox:Success", {}, function(success, label, amount)
+                exports["pulsar-core"]:ServerCallback("Robbery:Mailbox:Success", { coords = getRobberyCoords() }, function(success, label, amount)
                     if success then
                         exports["pulsar-hud"]:Notification(
                             "success",
@@ -77,7 +81,7 @@ AddEventHandler("Robbery:Client:Mailbox:Rob", function(ctx)
             end
         end,
         onFail = function()
-            exports["pulsar-core"]:ServerCallback("Robbery:Mailbox:Fail", {}, function(fail)
+            exports["pulsar-core"]:ServerCallback("Robbery:Mailbox:Fail", { coords = getRobberyCoords() }, function(fail)
                 exports["pulsar-hud"]:Notification("error", "You dropped the lockpick.", 6000)
                 ClearPedTasksImmediately(PlayerPedId())
             end)
@@ -100,7 +104,7 @@ AddEventHandler("Robbery:Client:ParkingMeter:Rob", function(ctx)
     
     exports["pulsar-games"]:MinigamePlayRoundSkillbar(1.0, 5, {
         onSuccess = function()
-            exports["pulsar-core"]:ServerCallback("Robbery:ParkingMeter:Success", {}, function(success, label, amount)
+            exports["pulsar-core"]:ServerCallback("Robbery:ParkingMeter:Success", { coords = getRobberyCoords() }, function(success, label, amount)
                 if success then
                     exports["pulsar-hud"]:Notification(
                         "success",
@@ -114,7 +118,7 @@ AddEventHandler("Robbery:Client:ParkingMeter:Rob", function(ctx)
             end)
         end,
         onFail = function()
-            exports["pulsar-core"]:ServerCallback("Robbery:ParkingMeter:Fail", {}, function(fail)
+            exports["pulsar-core"]:ServerCallback("Robbery:ParkingMeter:Fail", { coords = getRobberyCoords() }, function(fail)
                 exports["pulsar-hud"]:Notification("error", "You dropped the lockpick.", 6000)
                 ClearPedTasksImmediately(PlayerPedId())
             end)
@@ -169,7 +173,10 @@ AddEventHandler("Robbery:Client:Porch:Rob", function(ctx)
                 return
             end
             
-            exports["pulsar-core"]:ServerCallback("Robbery:Porch:Pickup", data, function(success, label, amount)
+            xports["pulsar-core"]:ServerCallback("Robbery:Porch:Pickup", {
+                spawnIndex = data.spawnIndex,
+                coords = getRobberyCoords(),
+            }, function(success, label, amount)
                 ClearPedTasks(PlayerPedId())
                 if success then
                     exports["pulsar-hud"]:Notification(
